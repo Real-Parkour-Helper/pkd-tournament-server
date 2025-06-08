@@ -1,0 +1,31 @@
+services:
+  tournament-manager:
+    container_name: tournament-manager
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # TODO: for the future, when DB is used
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
+    ports:
+      - 8080:8080
+    volumes:
+      - ./:/opt/app-root/src
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example_password
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+volumes:
+  postgres:
