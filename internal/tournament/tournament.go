@@ -2,35 +2,35 @@ package tournament
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"tournament-manager/internal/database"
 )
 
 type Tournament struct {
-	ID           int64
+	ID           string
 	Name         string
-	Time         uint64
+	Date         uint64
+	Format       string
 	Participants []Player
-	Format       Format
 }
 
-type Format struct {
-	Name    string
-	Handler func([]Player, []uint64)
+var AvailableFormats = map[string]string{
+	"solo_single_elim": "Solo Single Elimination",
+	"double_elim":      "Double Elimination",
 }
 
-var AvailableFormats = map[string]Format{
-	"double_elim": {
-		Name:    "Double Elimination",
-		Handler: func(p []Player, u []uint64) {},
-	},
-}
+func CreateTournament(name string, date uint64, format string) error {
+	slog.Debug("inserting values", "name", name, "date", date, "format", format)
 
-func CreateTournament(name string, time uint64, format string) error {
-	slog.Debug("inserting values", "name", name, "time", time, "format", format)
+	// Validate format
+	if _, exists := AvailableFormats[format]; !exists {
+		return fmt.Errorf("unsupported format: %s", format)
+	}
+
 	insertQuery := "INSERT INTO Tournament (name, date, format) VALUES ($1, $2, $3)"
 
-	if _, err := database.DB.Exec(context.Background(), insertQuery, name, time, format); err != nil {
+	if _, err := database.DB.Exec(context.Background(), insertQuery, name, date, format); err != nil {
 		slog.Warn(err.Error())
 		return err
 	}

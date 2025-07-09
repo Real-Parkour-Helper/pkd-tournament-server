@@ -28,6 +28,16 @@ func StartServer() {
 
 func registerRoutes(r *mux.Router) {
 	r.HandleFunc("/api/tournament", handlers.CreateTournament).Methods("POST")
+
+	r.HandleFunc("/api/tournament/{id}/start", handlers.StartTournament).Methods("POST")
+	r.HandleFunc("/api/tournament/{id}/result", handlers.SubmitGameResult).Methods("POST")
+	r.HandleFunc("/api/tournament/{id}/status", handlers.GetTournamentStatus).Methods("GET")
+	r.HandleFunc("/api/tournament/{id}/matches", handlers.GetNextMatches).Methods("GET")
+	r.HandleFunc("/api/tournament/{id}/bracket", handlers.GetTournamentBracket).Methods("GET")
+	r.HandleFunc("/api/tournament/{id}/stop", handlers.StopTournament).Methods("DELETE")
+
+	r.HandleFunc("/api/tournaments/active", handlers.ListActiveTournaments).Methods("GET")
+
 	r.HandleFunc("/api/signup", handlers.Signup).Methods("POST")
 	r.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"ha": "ha"})

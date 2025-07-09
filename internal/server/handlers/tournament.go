@@ -49,6 +49,19 @@ func CreateTournament(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	response := map[string]interface{}{
+		"message": "Tournament created successfully",
+		"name":    body.Name,
+		"date":    body.Time,
+		"format":  body.Format,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func validateCreateTournament(name string, ts uint64, format string) error {
