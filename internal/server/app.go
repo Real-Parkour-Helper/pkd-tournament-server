@@ -28,6 +28,7 @@ func StartServer() {
 
 func registerRoutes(r *mux.Router) {
 	r.HandleFunc("/api/tournament", handlers.CreateTournament).Methods("POST")
+	r.HandleFunc("/api/signup", handlers.Signup).Methods("POST")
 	r.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"ha": "ha"})
 	}).Methods("GET")

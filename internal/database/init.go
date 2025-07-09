@@ -36,7 +36,11 @@ func initTables() error {
 
 	CREATE TABLE IF NOT EXISTS Player (
 	    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-	    ign VARCHAR(100) NOT NULL
+	    ign VARCHAR(100) NOT NULL,
+		discord_name VARCHAR(100) NOT NULL,
+		tournament_id UUID NOT NULL,
+		personal_best INT,
+		FOREIGN KEY (tournament_id) REFERENCES Tournament(id)
 	);
 
 	CREATE TABLE IF NOT EXISTS GameResult (
