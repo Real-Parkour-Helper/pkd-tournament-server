@@ -4,21 +4,23 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # TODO: for the future, when DB is used
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - 8080:8080
     volumes:
       - ./:/opt/app-root/src
+    environment:
+      - DATABASE_URL=postgres://pkd:pswd@postgres:5432/pkd_tournaments
 
   postgres:
     container_name: postgres
     image: postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: example_password
+      POSTGRES_USER: ${POSTGRES_USER:-pkd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pswd}
+      POSTGRES_DB: ${POSTGRES_DB:-pkd_tournaments}
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
