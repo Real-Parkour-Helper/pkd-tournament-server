@@ -44,7 +44,8 @@ func CreateTournament(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tournament.CreateTournament(body.Name, tsUint, body.Format); err != nil {
+	id, err := tournament.CreateTournament(body.Name, tsUint, body.Format)
+	if err != nil {
 		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -55,6 +56,7 @@ func CreateTournament(w http.ResponseWriter, r *http.Request) {
 		"name":    body.Name,
 		"date":    body.Time,
 		"format":  body.Format,
+		"id":      id,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

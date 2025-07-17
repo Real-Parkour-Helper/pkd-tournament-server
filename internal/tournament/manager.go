@@ -173,9 +173,28 @@ func (tm *TournamentManager) getTournamentFromDB(tournamentID string) (*Tourname
 func (tm *TournamentManager) getPlayersForTournament(tournamentID string) ([]string, error) {
 	slog.Debug("Getting players for tournament", "tournament_id", tournamentID)
 
-	// TODO: Implement actual database query to get players
-	// For now, returning placeholder data
-	return []string{"player1", "player2", "player3", "player4"}, nil
+	query := "SELECT ign FROM Player WHERE tournament_id = $1"
+	rows, err := database.DB.Query(context.Background(), query, tournamentID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query players: %w", err)
+	}
+	defer rows.Close()
+
+	var players []string
+	for rows.Next() {
+		var ign string
+		if err := rows.Scan(&ign); err != nil {
+			return nil, fmt.Errorf("failed to scan player: %w", err)
+		}
+		players = append(players, ign)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating players: %w", err)
+	}
+
+	slog.Debug("Retrieved players from database", "tournament_id", tournamentID, "count", len(players), "players", players)
+	return players, nil
 }
 
 func (tm *TournamentManager) saveTournamentResults(tournamentID string, state *formats.SoloSingleElimState) error {
