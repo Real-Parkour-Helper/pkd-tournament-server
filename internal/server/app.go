@@ -42,4 +42,18 @@ func registerRoutes(r *mux.Router) {
 	r.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{"ha": "ha"})
 	}).Methods("GET")
+
+	r.Use(authMiddleware)
+}
+
+func authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
+		if !ok || username != os.Getenv("AUTH_USER") || password != os.Getenv("AUTH_PASSWORD") {
+			slog.Error("Attempted unauthorized access from %v (%v)", username, r.RemoteAddr)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

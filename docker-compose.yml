@@ -13,6 +13,8 @@ services:
       - ./:/opt/app-root/src
     environment:
       - DATABASE_URL=postgres://pkd:pswd@postgres:5432/pkd_tournaments
+      - AUTH_USER=pkd
+      - AUTH_PASSWORD=pkd
 
   postgres:
     container_name: postgres
