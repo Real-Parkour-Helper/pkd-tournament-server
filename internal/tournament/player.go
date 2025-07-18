@@ -12,7 +12,7 @@ type Player struct {
 	PersonalBest int64
 }
 
-func Signup(ign string, discord string, pb int64, tournament_id string) error {
+func Signup(ign string, discord string, pb uint64, tournament_id string) error {
 	slog.Debug("inserting values", "ign", ign, "discord", discord, "pb", pb, "tournament_id", tournament_id)
 	insertQuery := "INSERT INTO Player (ign, discord_name, personal_best, tournament_id) VALUES ($1, $2, $3, $4)"
 

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"tournament-manager/internal/database"
 	"tournament-manager/internal/tournament/formats"
+	"tournament-manager/internal/util"
 )
 
 type TournamentManager struct {
@@ -60,13 +61,22 @@ func (tm *TournamentManager) StartTournament(tournamentID string) error {
 	return nil
 }
 
-func (tm *TournamentManager) HandleGameResult(tournamentID, gameID string, players []string, times []uint64) error {
+func (tm *TournamentManager) HandleGameResult(tournamentID, gameID string, players []string, timesStr []string) error {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
 
 	state, exists := tm.activeTournaments[tournamentID]
 	if !exists {
 		return fmt.Errorf("tournament %s is not active", tournamentID)
+	}
+
+	times := make([]uint64, len(timesStr))
+	for i, timeStr := range timesStr {
+		time, err := util.ParseTime(timeStr)
+		if err != nil {
+			return fmt.Errorf("failed to parse time for player %s: %w", players[i], err)
+		}
+		times[i] = time
 	}
 
 	type result struct {

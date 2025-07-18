@@ -16,7 +16,7 @@ type StartTournamentRequest struct {
 type GameResultRequest struct {
 	GameID  string   `json:"game_id"`
 	Players []string `json:"players"`
-	Times   []uint64 `json:"times"`
+	Times   []string `json:"times"`
 }
 
 func StartTournament(w http.ResponseWriter, r *http.Request) {
