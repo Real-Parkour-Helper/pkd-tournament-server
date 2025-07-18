@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"slices"
 	"sync"
 	"tournament-manager/internal/database"
 	"tournament-manager/internal/tournament/formats"
@@ -66,6 +67,51 @@ func (tm *TournamentManager) HandleGameResult(tournamentID, gameID string, playe
 	state, exists := tm.activeTournaments[tournamentID]
 	if !exists {
 		return fmt.Errorf("tournament %s is not active", tournamentID)
+	}
+
+	type result struct {
+		ign  string
+		time uint64
+		pos  int
+	}
+	results := make([]result, len(players))
+	for i, player := range players {
+		results[i] = result{ign: player, time: times[i]}
+	}
+
+	slices.SortFunc(results, func(a, b result) int {
+		if a.time < b.time {
+			return -1
+		}
+		if a.time > b.time {
+			return 1
+		}
+		return 0
+	})
+
+	for i, res := range results {
+		results[i].pos = i + 1
+		sql := `
+			INSERT INTO GameResult (game_id, tournament_id, player_id, position, time)
+			VALUES ($1, $2, $3, $4, $5)
+		`
+
+		if i > 0 && res.time == results[i-1].time {
+			results[i].pos = results[i-1].pos
+		}
+
+		playerID, err := getPlayerUUIDByIGN(tournamentID, res.ign)
+		if err != nil {
+			err = fmt.Errorf("failed to get player UUID for IGN %s: %w", res.ign, err)
+			slog.Error(err.Error())
+			return err
+		}
+
+		if _, err := database.DB.Exec(context.TODO(), sql, gameID, tournamentID, playerID, results[i].pos, res.time); err != nil {
+			err = fmt.Errorf("failed to save game result for game %v: %v", res, err)
+			slog.Error(err.Error())
+			return err
+		}
 	}
 
 	err := state.HandleGameResult(gameID, players, times)
@@ -195,6 +241,19 @@ func (tm *TournamentManager) getPlayersForTournament(tournamentID string) ([]str
 
 	slog.Debug("Retrieved players from database", "tournament_id", tournamentID, "count", len(players), "players", players)
 	return players, nil
+}
+
+func getPlayerUUIDByIGN(tournamentID, ign string) (string, error) {
+	query := "SELECT id FROM Player WHERE tournament_id = $1 AND ign = $2"
+	row := database.DB.QueryRow(context.Background(), query, tournamentID, ign)
+
+	var playerID string
+	err := row.Scan(&playerID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get player UUID for IGN %s: %w", ign, err)
+	}
+
+	return playerID, nil
 }
 
 func (tm *TournamentManager) saveTournamentResults(tournamentID string, state *formats.SoloSingleElimState) error {

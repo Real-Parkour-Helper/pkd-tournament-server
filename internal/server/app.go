@@ -43,7 +43,9 @@ func registerRoutes(r *mux.Router) {
 		json.NewEncoder(w).Encode(map[string]string{"ha": "ha"})
 	}).Methods("GET")
 
-	r.Use(authMiddleware)
+	if os.Getenv("PROD") == "true" {
+		r.Use(authMiddleware)
+	}
 }
 
 func authMiddleware(next http.Handler) http.Handler {

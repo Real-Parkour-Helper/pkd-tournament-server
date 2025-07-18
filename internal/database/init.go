@@ -44,7 +44,7 @@ func initTables() error {
 	);
 
 	CREATE TABLE IF NOT EXISTS GameResult (
-	    game_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	    game_id VARCHAR(20) NOT NULL,
 	    tournament_id UUID NOT NULL,
 	    player_id UUID NOT NULL,
 	    position INT,
